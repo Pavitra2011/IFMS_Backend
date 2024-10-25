@@ -15,7 +15,16 @@ import lombok.Setter;
 @Setter
 public class ProjectManagementDTO {
 
-    private Long projectId;
+	public ProjectManagementDTO(Long projectId, String projectName, String description) {
+        this.projectId = projectId;
+        this.projectName = projectName;
+        this.description = description;
+    }
+	public ProjectManagementDTO(Long projectId, String projectName) {
+		this.projectId = projectId;
+		this.projectName = projectName;
+	}
+	private Long projectId;
     private String projectName;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -25,10 +34,12 @@ public class ProjectManagementDTO {
 
     // Fields for assignedTo
  // Assigned managers (optional)
+   // private List<Long> assignedUsers;
     private List<Long> assignedUserIds;  // Store user IDs of assigned managers
     private List<String> assignedUserNames;  // Store user names of assigned managers
 
     // Sprint and Task IDs
     private List<Long> sprintIds;
+    private List<String> sprintNames;  // Add this to hold sprint names
     private List<Long> taskIds;
 }

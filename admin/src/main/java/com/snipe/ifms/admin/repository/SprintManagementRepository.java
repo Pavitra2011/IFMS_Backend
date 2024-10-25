@@ -11,7 +11,11 @@ import org.springframework.stereotype.Repository;
 public interface SprintManagementRepository extends JpaRepository<SprintManagementDomain, Long> {
 
 	List<SprintManagementDomain> findByProject_ProjectId(Long projectId);
-    // You can define custom query methods here if needed
-    // For example:
-    // List<SprintManagementDomain> findByProjectId(Long projectId);
+   
+	 
+    // Check if a sprint with the same name exists
+    boolean existsBySprintName(String sprintName);
+    
+    // Check if a sprint with the same number exists
+    boolean existsBySprintNo(Long sprintNo);
 }

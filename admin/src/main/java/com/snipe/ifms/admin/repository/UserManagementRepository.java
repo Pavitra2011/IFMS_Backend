@@ -28,6 +28,22 @@ public interface UserManagementRepository extends JpaRepository<UserManagementDo
 	    boolean existsByPhone(String phone);
 	    boolean existsBymailId(String mailId);
 	    
+	    // Custom query to find all active users for soft dlete 
+	    @Query("SELECT u FROM UserManagementDomain u WHERE u.status = 'active'")
+	    List<UserManagementDomain> findAllActiveUsers();
+
+	 // New method to find users by status
+	    List<UserManagementDomain> findByStatus(String status);
+	    @Query("SELECT u FROM UserManagementDomain u ORDER BY CASE WHEN u.status = 'active' THEN 0 ELSE 1 END")
+	    List<UserManagementDomain> findAllSortedByStatus();
+	    
+	 // Custom query to fetch users with roles
+	    @Query("SELECT u FROM UserManagementDomain u JOIN FETCH u.role")
+	    List<UserManagementDomain> findAllWithRoles();
+	    
 	 // Retrieve all users whose role is "PROJECT_MANAGER"
 	    List<UserManagementDomain> findByRole_RoleName(String roleName);
+	    
+	   
+
 }

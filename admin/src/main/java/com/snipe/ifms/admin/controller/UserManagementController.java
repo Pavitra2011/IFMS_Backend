@@ -1,70 +1,58 @@
 package com.snipe.ifms.admin.controller;
 
-import java.util.List;
+import com.snipe.ifms.admin.domain.UserManagementDomain;
+import com.snipe.ifms.admin.dto.UserManagementDTO;
+import com.snipe.ifms.admin.exception.ResourceNotFoundException;
+import com.snipe.ifms.admin.service.UserManagementServiceImpl;
+
+import jakarta.validation.Valid;
+
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.snipe.ifms.admin.domain.UserManagementDomain;
-import com.snipe.ifms.admin.dto.UserManagementDTO;
-import com.snipe.ifms.admin.service.UserManagementService;
+import java.util.List;
+import java.util.Map;
 
-import jakarta.validation.Valid;
-//@CrossOrigin(origins = "http://localhost:4200") // Specify allowed origins
 @RestController
 @RequestMapping("/api/users")
 public class UserManagementController {
-	
+
     @Autowired
-    private UserManagementService userManagementService;
-
-
+    private UserManagementServiceImpl userManagementService;
     
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UserManagementController.class);
+
+
+    // Create a new user using DTO
     @PostMapping
-    public ResponseEntity<?> createUser(@Valid @RequestBody UserManagementDomain user) {
-        // Check if the username already exists
-        if (userManagementService.usernameExists(user.getUserName())) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserManagementDTO userDTO) {
+        if (userManagementService.usernameExists(userDTO.getUserName())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists.");
         }
-
-        // Check if the phone number already exists
-        if (userManagementService.phoneExists(user.getPhone())) {
+        if (userManagementService.phoneExists(userDTO.getPhone())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone number already exists.");
         }
-        
-        // Check if the email already exists
-        if (userManagementService.emailExists(user.getMailId())) {
+        if (userManagementService.emailExists(userDTO.getMailId())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists.");
         }
 
-
-        // If checks pass, create the user
-        UserManagementDomain createdUser = userManagementService.createUser(user);
+        // Convert DTO to domain entity and create the user
+        UserManagementDomain createdUser = userManagementService.createUser(userDTO);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
-
+    
+   
+    
     
     @GetMapping("/check-username")
-    public ResponseEntity<Boolean> checkUsernameExists(@RequestParam("username") String username) {
-        if (username == null || username.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Ensure username is valid
-        }
+    public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
         boolean exists = userManagementService.usernameExists(username);
-        return new ResponseEntity<>(exists, HttpStatus.OK);
+        return ResponseEntity.ok(exists);
     }
-
-
     @GetMapping("/check-phone")
     public ResponseEntity<Boolean> checkPhoneExists(@RequestParam("phone") String phone) {
         if (phone == null || !phone.matches("\\d{10}")) {
@@ -82,50 +70,65 @@ public class UserManagementController {
         boolean exists = userManagementService.emailExists(email);
         return new ResponseEntity<>(exists, HttpStatus.OK);
     }
+    
 
-    
-    
-    
-    // Get user by ID
+
+
+
+    // Get user by ID using DTO
     @GetMapping("/{id}")
-    public ResponseEntity<UserManagementDomain> getUserById(@PathVariable Long id) {
-        UserManagementDomain user = userManagementService.getUserById(id);
-        if (user != null) {
-            return new ResponseEntity<>(user, HttpStatus.OK);
+    public ResponseEntity<UserManagementDTO> getUserById(@PathVariable Long id) {
+        UserManagementDTO userDTO = userManagementService.getUserById(id);
+        if (userDTO != null) {
+            return new ResponseEntity<>(userDTO, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    
 
-    // Get all users
+    // Get all users using DTO
     @GetMapping
-    public ResponseEntity<List<UserManagementDomain>> getAllUsers() {
-        List<UserManagementDomain> users = userManagementService.getAllUsers();
+    public ResponseEntity<List<UserManagementDTO>> getAllUsers() {
+        List<UserManagementDTO> users = userManagementService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
-    } 
-
-
+    }
     
 
+    
+    @GetMapping("/with-roles")
+    public ResponseEntity<List<UserManagementDTO>> getUsersWithRoles() {
+        List<UserManagementDTO> users = userManagementService.getAllUsersWithRoles();
+        if (users.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // No users found
+        }
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+
+    // Get all users sorted by status
+    @GetMapping("/sorted")
+    public ResponseEntity<List<UserManagementDTO>> getAllUsersSorted() {
+        List<UserManagementDTO> sortedUsers = userManagementService.getUsersSortedByStatus();
+        return new ResponseEntity<>(sortedUsers, HttpStatus.OK);
+    }
+
+    // Update user using DTO
     @PutMapping("/{id}")
-    public ResponseEntity<UserManagementDomain> updateUser(@PathVariable Long id, @RequestBody UserManagementDomain updatedUser) {
+    public ResponseEntity<UserManagementDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserManagementDTO updatedUserDTO) {
         try {
-            UserManagementDomain user = userManagementService.updateUser(id, updatedUser);
-            if (user != null) {
-                return new ResponseEntity<>(user, HttpStatus.OK);
+            UserManagementDTO updatedUser = userManagementService.updateUser(id, updatedUserDTO);
+            if (updatedUser != null) {
+                return new ResponseEntity<>(updatedUser, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            // Log the error for debugging
-            System.err.println("Error updating user: " + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // Delete a user by ID
-    @DeleteMapping("/{id}")
+    // Soft delete a user by ID
+  /*  @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         boolean deleted = userManagementService.deleteUser(id);
         if (deleted) {
@@ -133,41 +136,83 @@ public class UserManagementController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }*/
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        boolean deleted = userManagementService.deleteUser(id);
+        
+        if (deleted) {
+            logger.info("User with ID {} was soft-deleted.", id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } else {
+            logger.warn("User with ID {} not found for deletion.", id);
+            return ResponseEntity.notFound().build(); // 404 Not Found
+        }
     }
     
- // REST endpoint to search users by userName
+ /*   //reactivate status after deleting
+    @PutMapping("/{userId}/status")
+    public ResponseEntity<String> updateUserStatus(@PathVariable Long userId, @RequestBody Map<String, String> updates) {
+        String status = updates.get("status");
+        
+        // Call service to update user status
+        userManagementService.updateUserStatus(userId, status);
+        
+        return ResponseEntity.ok("User status updated successfully");
+    }
+*/
+    
+    @PutMapping("/{userId}/status")
+    public ResponseEntity<Void> updateUserStatus(@PathVariable Long userId, @RequestBody Map<String, String> statusUpdate) {
+        String status = statusUpdate.get("status");
+        if (status == null || (!status.equals("Active") && !status.equals("Inactive"))) {
+            return ResponseEntity.badRequest().build(); // 400 Bad Request
+        }
+
+        try {
+            userManagementService.updateUserStatus(userId, status);
+            return ResponseEntity.ok().build(); // 200 OK
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
+
+
+
+  
+
+    
+    // Search users by userName
     @GetMapping("/searchUserByName")
-     public ResponseEntity<List<UserManagementDomain>> searchUserByName(@RequestParam("userName") String userName) {
-    //public ResponseEntity<List<UserManagementDomain>> searchUserByName(@PathVariable String userName) {
-        List<UserManagementDomain> users = userManagementService.searchUsersByName(userName);
-
+    public ResponseEntity<List<UserManagementDTO>> searchUserByName(@RequestParam("userName") String userName) {
+        List<UserManagementDTO> users = userManagementService.searchUsersByName(userName);
         if (users.isEmpty()) {
-        	System.out.println("User does not exist");
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.ok(users);
-        }
-    }  
-    
- // REST endpoint to search users by mailId
-    @GetMapping("/searchByMailId")
-    public ResponseEntity<List<UserManagementDomain>> searchUserByMailId(@RequestParam("mailId") String mailId) {
-        List<UserManagementDomain> users = userManagementService.searchUsersByMailId(mailId);
-
-        if (users.isEmpty()) {
-        	System.out.println("Mailid does not exist for particular user");
             return ResponseEntity.notFound().build();
         } else {
             return ResponseEntity.ok(users);
         }
     }
- // REST endpoint to search users by phone number
-    @GetMapping("/searchByPhone")
-    public ResponseEntity<List<UserManagementDomain>> searchUserByPhone(@RequestParam("phone") String phone) {
-        List<UserManagementDomain> users = userManagementService.searchUsersByPhone(phone);
 
+    // Search users by mailId
+    @GetMapping("/searchByMailId")
+    public ResponseEntity<List<UserManagementDTO>> searchUserByMailId(@RequestParam("mailId") String mailId) {
+        List<UserManagementDTO> users = userManagementService.searchUsersByMailId(mailId);
         if (users.isEmpty()) {
-        	System.out.println("PhoneNo does not exist for particular user");
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(users);
+        }
+    }
+
+    // Search users by phone number
+    @GetMapping("/searchByPhone")
+    public ResponseEntity<List<UserManagementDTO>> searchUserByPhone(@RequestParam("phone") String phone) {
+        List<UserManagementDTO> users = userManagementService.searchUsersByPhone(phone);
+        if (users.isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
             return ResponseEntity.ok(users);
@@ -180,5 +225,3 @@ public class UserManagementController {
         return userManagementService.getProjectManagers();
     }
 }
-
-

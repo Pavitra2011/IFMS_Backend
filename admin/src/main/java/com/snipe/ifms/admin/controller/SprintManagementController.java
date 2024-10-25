@@ -1,6 +1,8 @@
 package com.snipe.ifms.admin.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,21 +11,27 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 //import com.snipe.ifms.admin.domain.SprintManagementDomain;
 import com.snipe.ifms.admin.dto.SprintManagementDTO;
+import com.snipe.ifms.admin.repository.SprintManagementRepository;
 //import com.snipe.ifms.admin.service.ProjectManagementService;
 import com.snipe.ifms.admin.service.SprintManagementService;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/api/sprints")
 public class SprintManagementController {
 
+	@Autowired
+	private SprintManagementRepository sprintRepository;
     @Autowired
     private SprintManagementService sprintService;
     //private final ProjectManagementService projectService;  // Inject Project Management service
@@ -38,6 +46,19 @@ public class SprintManagementController {
     public ResponseEntity<SprintManagementDTO> createSprint(@RequestBody SprintManagementDTO sprintDTO) {
         SprintManagementDTO createdSprint = sprintService.createSprint(sprintDTO);
         return ResponseEntity.ok(createdSprint);
+    }
+    
+ // Update an existing sprint (PUT)
+    @PutMapping("/{sprintId}")
+    public ResponseEntity<SprintManagementDTO> updateSprint(
+            @PathVariable Long sprintId, 
+            @Valid @RequestBody SprintManagementDTO sprintDTO) throws Exception {
+        
+        // Ensure the correct sprint ID is set
+        sprintDTO.setSprintId(sprintId);
+
+        SprintManagementDTO updatedSprint = sprintService.updateSprint(sprintDTO);
+        return ResponseEntity.ok(updatedSprint);
     }
 
     // Delete a sprint by its ID (DELETE)
@@ -94,4 +115,18 @@ public class SprintManagementController {
                     .body(e.getMessage());
         }
     }
+    
+
+ // Add this to your existing SprintManagementController class
+ @GetMapping("/check")
+ public ResponseEntity<Map<String, Boolean>> checkSprintExists(@RequestParam String name, @RequestParam Long number) {
+     boolean nameExists = sprintRepository.existsBySprintName(name);
+     boolean numberExists = sprintRepository.existsBySprintNo(number);
+
+     Map<String, Boolean> response = new HashMap<>();
+     response.put("nameExists", nameExists);
+     response.put("numberExists", numberExists);
+
+     return ResponseEntity.ok(response);
+ }
 }

@@ -2,8 +2,6 @@ package com.snipe.ifms.admin.domain;
 
 
 import java.time.LocalDate;
-import java.util.List;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,7 +12,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
@@ -68,20 +65,14 @@ public class UserManagementDomain {
     private String gender;  // Added gender
 
     
+
+
     
- /* Role validation: cannot be blank and must be between 1 and 100 characters
-    @NotBlank(message = "Role cannot be blank")
-    @Size(min = 1, max = 100, message = "Role must be between 1 and 100 characters")
-    @Column(name = "role", nullable = false)
-    private String role;  // Added role 
- */
-    // Many Users can have the same Role
-   
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_name", referencedColumnName = "role_name")
     private RoleManagementDomain role;
-
     
+   
  // Status validation: cannot be blank
     @NotBlank(message = "Status cannot be blank")
     @Column(name = "status", nullable = false)
@@ -111,8 +102,7 @@ public class UserManagementDomain {
     private LocalDate dateModified;
 
 
-    @ManyToMany(mappedBy = "assignedUsers", fetch = FetchType.LAZY)
-    private List<ProjectManagementDomain> projects;  // Could be empty if user has no assigned projects
+    
 
 
 }

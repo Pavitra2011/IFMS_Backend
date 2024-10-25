@@ -6,6 +6,8 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,6 +48,13 @@ public class SprintManagementDomain {
     
     @Column(name="sprint_number",nullable=false)
     private Long sprintNo;
+    
+ // Add status field with ENUM mapping
+    @Enumerated(EnumType.STRING)  // Store enum as string in the database
+    @Column(name = "status", nullable = false)
+    private SprintStatus status;
+    
+    
 
     // OneToMany relationship with TaskManagementDomain
     @OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, orphanRemoval = true)

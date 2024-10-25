@@ -1,22 +1,24 @@
 package com.snipe.ifms.admin.service;
 
-import com.snipe.ifms.admin.domain.TaskManagementDomain;
-import com.snipe.ifms.admin.dto.TaskManagementDTO;
-import com.snipe.ifms.admin.repository.TaskManagementRepository;
-import com.snipe.ifms.admin.domain.SprintManagementDomain;
-import com.snipe.ifms.admin.domain.UserManagementDomain;
-import com.snipe.ifms.admin.domain.ProjectManagementDomain;
-import com.snipe.ifms.admin.repository.SprintManagementRepository;
-import com.snipe.ifms.admin.repository.UserManagementRepository;
-import com.snipe.ifms.admin.repository.ProjectManagementRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.snipe.ifms.admin.domain.ProjectManagementDomain;
+import com.snipe.ifms.admin.domain.SprintManagementDomain;
+import com.snipe.ifms.admin.domain.TaskManagementDomain;
+import com.snipe.ifms.admin.domain.UserManagementDomain;
+import com.snipe.ifms.admin.dto.ProjectManagementDTO;
+import com.snipe.ifms.admin.dto.SprintManagementDTO;
+import com.snipe.ifms.admin.dto.TaskManagementDTO;
+import com.snipe.ifms.admin.repository.ProjectManagementRepository;
+import com.snipe.ifms.admin.repository.SprintManagementRepository;
+import com.snipe.ifms.admin.repository.TaskManagementRepository;
+import com.snipe.ifms.admin.repository.UserManagementRepository;
 
 @Service
 public class TaskManagementService {
@@ -196,5 +198,55 @@ public class TaskManagementService {
         List<TaskManagementDomain> tasks = taskManagementRepository.findByProject_ProjectId(projectId);
         // Convert tasks to TaskManagementDTOs and return
         return tasks.stream().map(task -> convertToDTO(task)).collect(Collectors.toList());
+    }
+    
+
+
+    public List<ProjectManagementDTO> getAllProjectsAsDTOs() throws Exception {
+        List<ProjectManagementDomain> projects = projectManagementRepository.findAll();
+
+        if (projects.isEmpty()) {
+            throw new Exception("No projects found");
+        }
+
+        return projects.stream()
+                .map(this::convertToDTO) // Convert each project to DTO
+                .collect(Collectors.toList());
+   }
+	
+
+// Method to convert ProjectManagementDomain to ProjectManagementDTO
+    private ProjectManagementDTO convertToDTO(ProjectManagementDomain project) {
+    	return new ProjectManagementDTO(
+        project.getProjectId(),
+        project.getProjectName(),
+        project.getDescription()
+    	);
+    }
+
+    // Method to convert SprintManagementDomain to SprintManagementDTO
+    private SprintManagementDTO convertToSprintDTO(SprintManagementDomain sprint) {
+        return new SprintManagementDTO(
+            sprint.getSprintId(),
+            sprint.getSprintName(),
+            sprint.getStatus(),
+            sprint.getStartDate(),
+            sprint.getEndDate(),
+            sprint.getProject().getProjectId(),
+            sprint.getProject().getProjectName()
+           
+        );
+    }
+    
+    public List<SprintManagementDTO> getAllSprintsAsDTOs() throws Exception {
+        List<SprintManagementDomain> sprints = sprintManagementRepository.findAll(); // Fetch all sprints
+
+        if (sprints.isEmpty()) {
+            throw new Exception("No sprints found");
+        }
+
+        return sprints.stream()
+                .map(this::convertToSprintDTO) // Convert each sprint to DTO
+                .collect(Collectors.toList());
     }
 }

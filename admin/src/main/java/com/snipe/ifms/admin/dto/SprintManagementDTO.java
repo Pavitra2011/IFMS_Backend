@@ -2,10 +2,14 @@ package com.snipe.ifms.admin.dto;
 
 import java.time.LocalDate;
 
-import com.snipe.ifms.admin.domain.ProjectManagementDomain;
+import com.snipe.ifms.admin.domain.SprintStatus;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class SprintManagementDTO {
@@ -16,53 +20,18 @@ public class SprintManagementDTO {
     private long projectId;
     private String projectName;
     private Long sprintNo;
+    private SprintStatus status;
 
-    // Getters and setters
-    public Long getSprintId() {
-        return sprintId;
-    }
+    public SprintManagementDTO(Long sprintId, String sprintName, SprintStatus status, LocalDate startDate, LocalDate endDate, long projectId, String projectName) {
+		// TODO Auto-generated constructor stub
+    	this.sprintId=sprintId;
+    	this.sprintName=sprintName;
+    	this.startDate=startDate;
+    	this.endDate=endDate;
+    	this.projectId=projectId;
+    	this.projectName=projectName;
+    	this.status = status;
+	}
 
-    public void setSprintId(Long sprintId) {
-        this.sprintId = sprintId;
-    }
-
-    public String getSprintName() {
-        return sprintName;
-    }
-
-    public void setSprintName(String sprintName) {
-        this.sprintName = sprintName;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
+	
 }

@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,5 +81,15 @@ public class ProjectManagementController {
         return ResponseEntity.ok(projectDTO);
     }
     
+    // Update an existing Project (PUT)
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectManagementDTO> updateProject(@PathVariable Long id, @RequestBody ProjectManagementDTO projectDTO) {
+        try {
+            ProjectManagementDTO updatedProject = projectService.updateProject(id, projectDTO);
+            return ResponseEntity.ok(updatedProject); // Return 200 OK with the updated project
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Return 404 Not Found if project wasn't found
+        }
+    }
     
 }

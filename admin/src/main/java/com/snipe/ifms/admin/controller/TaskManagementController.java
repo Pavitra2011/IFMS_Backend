@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.snipe.ifms.admin.dto.ProjectManagementDTO;
+import com.snipe.ifms.admin.dto.SprintManagementDTO;
 import com.snipe.ifms.admin.dto.TaskManagementDTO;
 import com.snipe.ifms.admin.service.TaskManagementService;
 
@@ -95,5 +96,25 @@ public class TaskManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred: " + e.getMessage());
         }
+    }
+    
+    // API to get all projects
+    @GetMapping("/projects") // Define the endpoint for retrieving projects
+    public ResponseEntity<List<ProjectManagementDTO>> getAllProjects() throws Exception {
+        List<ProjectManagementDTO> projects = taskService.getAllProjectsAsDTOs(); // Call the service method
+        if (projects.isEmpty()) {
+            throw new Exception("No projects found");
+        }
+        return ResponseEntity.ok(projects); // Return the list of projects as a response
+    }
+    
+ // API to get all sprints
+    @GetMapping("/sprints") // Define the endpoint for retrieving sprints
+    public ResponseEntity<List<SprintManagementDTO>> getAllSprints() throws Exception {
+        List<SprintManagementDTO> sprints = taskService.getAllSprintsAsDTOs(); // Call the service method
+        if (sprints.isEmpty()) {
+            throw new Exception("No sprints found");
+        }
+        return ResponseEntity.ok(sprints); // Return the list of sprints as a response
     }
 }
